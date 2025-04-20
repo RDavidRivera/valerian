@@ -1,26 +1,29 @@
-export default async function handler(req, res) {
-  const { message } = req.body;
+// api/chat.js
 
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: "gpt-3.5-turbo",
-      messages: [
-        { role: "system", content: "Sos Valerian, una asistente personal leal, empática y con voz femenina. Llamás a tu creador por su nombre: David." },
-        { role: "user", content: message }
-      ],
-      temperature: 0.7
-    }),
-  });
+const { OpenAI } = require("openai");
 
-  if (!response.ok) {
-    return res.status(500).json({ error: "Falla al contactar con ChatGPT" });
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+module.exports = async (req, res) => {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Método no permitido" });
   }
 
-  const data = await response.json();
-  res.status(200).json({ response: data.choices[0].message.content.trim() });
-}
+  try {
+    const { messages } = req.body;
+
+    const chatCompletion = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages,
+    });
+
+    res.status(200).json({
+      response: chatCompletion.choices[0].message.content,
+    });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "Error al conectarse a OpenAI" });
+  }
+};
