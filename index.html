@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Valerian</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background: #111; color: #eee; text-align: center; padding: 2rem; }
+    button { padding: 1rem 2rem; font-size: 1.2rem; border: none; border-radius: 1rem; background: #5a3aff; color: white; cursor: pointer; margin-top: 1rem; }
+    button:hover { background: #3721d1; }
+    .response { margin-top: 2rem; font-size: 1.4rem; }
+  </style>
+</head>
+<body>
+  <h1>Hola, David. Soy Valerian.</h1>
+  <p>Hablame y te responderé con mi voz.</p>
+  <button onclick="startListening()">Hablar</button>
+  <div class="response" id="response"></div>
+
+  <script>
+    const synth = window.speechSynthesis;
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'es-ES';
+
+    function speak(text) {
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'es-ES';
+      utter.voice = synth.getVoices().find(v => v.name.includes('Google') || v.name.includes('Microsoft') || v.name.includes('es-ES'));
+      synth.speak(utter);
+    }
+
+    function startListening() {
+      recognition.start();
+      speak("Te escucho, David");
+    }
+
+    recognition.onresult = async (event) => {
+      const transcript = event.results[0][0].transcript;
+      document.getElementById('response').innerText = `Tú: ${transcript}`;
+
+      // Aquí va la conexión a la IA (sólo ejemplo simulado)
+      const respuesta = await getRespuestaDeValerian(transcript);
+      document.getElementById('response').innerText += `\nValerian: ${respuesta}`;
+      speak(respuesta);
+    };
+
+    async function getRespuestaDeValerian(input) {
+      // En producción conectarías a la API de ChatGPT o similar
+      // Aquí usamos una respuesta simulada
+      if (input.toLowerCase().includes("hola")) {
+        return "Hola David, ¿cómo te sentís hoy?";
+      } else if (input.toLowerCase().includes("qué tengo que hacer")) {
+        return "Hoy tenés una reunión, un informe pendiente y ayudar a tu hija con la tarea. ¿Querés que te lo recuerde más tarde?";
+      } else {
+        return "Estoy aquí para vos, ¿en qué te puedo ayudar ahora?";
+      }
+    }
+  </script>
+</body>
+</html>
